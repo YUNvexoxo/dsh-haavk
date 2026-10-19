@@ -1,0 +1,63 @@
+{
+  "name": "dsh-haavk",
+  "version": "1.8.0",
+  "description": "DeepSeek Harness 启动界面与启动动画（哈夫克 HAAVK 全域互联终端主题版）：复刻《三角洲行动》哈夫克阵营开机画面 —— 浅蓝白斜切几何底 + 四角刻度 + 右侧竖排标尺，左列哈夫克菱形徽记与 HAAVK 字标，右列「哈夫克全域互联终端」标题与八行逐行点亮的系统清单（正在遍历员工级别矩阵 / 正在启动员工效率监控系统 / 正在校准全域信号阵列 / 正在预热脑机接口 / 正在计算可接受损失 / 正在抑制不必要变量 / 每一秒，都在投资未来…… / 请稍候，进一步需要时间……），底部 55ms / CN UID 状态条与一条贯穿全宽的细进度线，开机五步复用同一套清单节奏推进；终幕分层退场 + 徽记落印 + WELCOME 交叉淡入 + 整片浅色场溶解，全程不缩放不失焦。配色只用哈夫克蓝白（主蓝 #2362af / 亮蓝 #5b96dd / 深蓝 #16324f）。身份名称等参数在 DSH 设置页可改。web profile 与 DeepSeek Harness Desktop 桌面端通用。",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "deepseek-harness-desktop",
+    "startup",
+    "splash",
+    "boot-animation"
+  ],
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "test",
+    "preview/index.html",
+    "open-preview.sh",
+    "打开预览.cmd",
+    "安装.cmd",
+    "cordis.patch.yml",
+    "README.md",
+    "INSTALL.md",
+    "DESKTOP.md",
+    "AUDIO-FIELDS.md",
+    "desktop-shell",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node test/smoke-host.mjs && node test/smoke-splash.mjs && node test/smoke-client.mjs && node test/smoke-desktop-boot.mjs && node test/smoke-desktop-shell.mjs"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YUNvexoxo/dsh-haavk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YUNvexoxo/dsh-haavk/issues"
+  },
+  "homepage": "https://github.com/YUNvexoxo/dsh-haavk#readme",
+  "engines": {
+    "node": ">=20"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-settings"
+      ],
+      "platform": "web"
+    }
+  },
+  "author": "沈宏宏"
+}

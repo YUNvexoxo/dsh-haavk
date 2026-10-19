@@ -1,0 +1,978 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; img-src 'self' file: data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'"
+    />
+    <title></title>
+    <script>
+      const splashTheme = new URLSearchParams(location.search).get('theme')
+      document.documentElement.dataset.theme = splashTheme === 'dark' ? 'dark' : 'light'
+      if (navigator.platform.toLowerCase().startsWith('win')) {
+        document.documentElement.dataset.platform = 'windows'
+      }
+    </script>
+    <style>
+      /* ======================================================================
+       * DSH Desktop 启动壳 —— 与 dsh-haavk 插件的「哈夫克全域互联终端」
+       * 同一套视觉：同源调色板、同一个菱形徽记、同一套网格/四角/标尺/状态条。
+       *
+       * 这一层是 Electron 主进程在网页层之前加载的原生画面（showSplash() →
+       * Resources/splash.html），插件无法注入，所以样式与几何在这里以单文件
+       * 形式重写一遍，色值与 lib/splash.css 的 .dsu-mode-portal 保持同源。
+       * 不引用任何外部文件，徽记用内联 SVG —— 即使 Resources 里缺图也能独立成立。
+       * ==================================================================== */
+      :root {
+        color-scheme: light;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+          "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+
+        /* 与 lib/splash.css 的 .dsu-mode-portal 同源 */
+        --p-ink: #16324f;
+        --p-blue: #2362af;
+        --p-blue-d: #1b3f77;
+        --p-blue-l: #5b96dd;
+        --p-mist: #5f7896;
+        --p-blue-rgb: 35, 98, 175;
+        --p-mist-rgb: 95, 120, 150;
+        --p-white-rgb: 255, 255, 255;
+        --p-plane-t: #cbd7e6;
+        --p-plane-m: #d8e1e8;
+        --p-plane-b: #e6e9ec;
+        --p-facet-rgb: 62, 122, 182;
+        --p-grid: rgba(35, 98, 175, 0.055);
+        --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      :root[data-theme='dark'] {
+        color-scheme: dark;
+        --p-ink: #e8f1fb;
+        --p-blue: #7fb3ee;
+        --p-blue-d: #a8cdf5;
+        --p-blue-l: #5b96dd;
+        --p-mist: #89a4c2;
+        --p-blue-rgb: 127, 179, 238;
+        --p-mist-rgb: 137, 164, 194;
+        --p-white-rgb: 8, 17, 29;
+        --p-plane-t: #0b1a2d;
+        --p-plane-m: #0a1626;
+        --p-plane-b: #081120;
+        --p-facet-rgb: 96, 156, 222;
+        --p-grid: rgba(127, 179, 238, 0.075);
+      }
+
+      * { box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+
+      body {
+        color: var(--p-ink);
+        background: linear-gradient(
+          168deg,
+          var(--p-plane-t) 0%,
+          var(--p-plane-m) 44%,
+          var(--p-plane-b) 100%
+        );
+      }
+
+      /* ── 底场：斜切几何折光 + 极淡网格 + 四角刻度 + 右侧标尺 ─────────────── */
+      .facet { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+      .facet::before,
+      .facet::after { content: ''; position: absolute; }
+      .facet::before {
+        inset: -20% -10% auto -14%;
+        height: 150%;
+        background: linear-gradient(
+          146deg,
+          rgba(var(--p-facet-rgb), 0.07) 0%,
+          rgba(var(--p-facet-rgb), 0.03) 46%,
+          rgba(var(--p-facet-rgb), 0) 72%,
+          rgba(var(--p-white-rgb), 0) 82%
+        );
+        clip-path: polygon(0 0, 58% 0, 26% 100%, 0 100%);
+      }
+      .facet::after {
+        inset: -14% -8% auto auto;
+        width: 54%;
+        height: 132%;
+        background: linear-gradient(
+          204deg,
+          rgba(var(--p-facet-rgb), 0.04) 0%,
+          rgba(var(--p-facet-rgb), 0.02) 54%,
+          rgba(var(--p-white-rgb), 0) 82%
+        );
+        clip-path: polygon(44% 0, 100% 0, 100% 100%, 10% 100%);
+      }
+
+      .grid {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background-image: linear-gradient(to right, var(--p-grid) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--p-grid) 1px, transparent 1px);
+        background-size: 4vw 4vw;
+        -webkit-mask-image: radial-gradient(
+          80% 70% at 46% 46%, #000 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+        mask-image: radial-gradient(
+          80% 70% at 46% 46%, #000 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+      }
+
+      /* 全场扫描光带：很慢、很淡，只为让画面不要「定住」 */
+      .beam {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: -26%;
+        height: 34%;
+        z-index: 1;
+        pointer-events: none;
+        background: linear-gradient(
+          180deg,
+          rgba(var(--p-white-rgb), 0) 0%,
+          rgba(var(--p-white-rgb), 0.1) 16%,
+          rgba(var(--p-white-rgb), 0.3) 44%,
+          rgba(var(--p-white-rgb), 0.16) 64%,
+          rgba(var(--p-white-rgb), 0.04) 84%,
+          rgba(var(--p-white-rgb), 0) 100%
+        );
+        opacity: 0;
+        animation: beam 11800ms cubic-bezier(0.45, 0, 0.55, 1) 400ms infinite;
+      }
+      @keyframes beam {
+        0% { transform: translate3d(0, 0, 0); opacity: 0; }
+        16% { opacity: 0.55; }
+        76% { opacity: 0.32; }
+        100% { transform: translate3d(0, 520%, 0); opacity: 0; }
+      }
+
+      .corner { position: fixed; width: 22px; height: 22px; z-index: 1; opacity: 0.34; }
+      .corner::before,
+      .corner::after { content: ''; position: absolute; background: var(--p-blue); }
+      .corner::before { width: 1px; height: 100%; }
+      .corner::after { width: 100%; height: 1px; }
+      .corner.tl { left: 1.4vw; top: 2.2vh; }
+      .corner.tr { right: 1.4vw; top: 2.2vh; }
+      .corner.tr::before { right: 0; }
+      .corner.tr::after { right: 0; }
+      .corner.bl { left: 1.4vw; bottom: 15.6vh; }
+      .corner.bl::before { bottom: 0; }
+      .corner.bl::after { bottom: 0; }
+      .corner.br { right: 1.4vw; bottom: 15.6vh; }
+      .corner.br::before { right: 0; bottom: 0; }
+      .corner.br::after { right: 0; bottom: 0; }
+
+      .ruler {
+        position: fixed;
+        right: 2.4vw;
+        top: 16vh;
+        bottom: 17vh;
+        width: 0.62vw;
+        z-index: 1;
+        /* 标尺＝竖线 + 横向短刻度。早先用「90deg 渐变 + 高度 2.4vh」写，
+           纵向没有变化、每行铺满自己那格，整条读成一根实心柱子。
+           改成 repeating-linear-gradient 按 180deg 铺 1px 短划才是刻度。 */
+        background-image:
+          repeating-linear-gradient(180deg, rgba(var(--p-blue-rgb), 0.40) 0 1px, transparent 1px 2.1vh),
+          repeating-linear-gradient(180deg, rgba(var(--p-blue-rgb), 0.40) 0 1px, transparent 1px 10.5vh);
+        background-size: 34% 100%, 100% 100%;
+        background-position: left top, left top;
+        background-repeat: repeat-y, repeat-y;
+        border-right: 1px solid rgba(var(--p-blue-rgb), 0.20);
+        opacity: 0.6;
+        -webkit-mask-image: linear-gradient(
+          to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
+        mask-image: linear-gradient(
+          to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
+      }
+
+      /* ── 左上品牌块 ────────────────────────────────────────────────────── */
+      .brand {
+        position: fixed;
+        left: 3.4vw;
+        top: 4.6vh;
+        z-index: 2;
+        color: var(--p-blue-d);
+        opacity: 0;
+        transform: translateY(-0.4em);
+        transition:
+          opacity 800ms ease 200ms,
+          transform 900ms cubic-bezier(0.16, 0.84, 0.24, 1) 200ms;
+      }
+      .branded .brand { opacity: 1; transform: none; }
+      .brand b {
+        display: block;
+        font-size: clamp(15px, 2.5vh, 26px);
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        line-height: 1.14;
+        color: var(--p-blue-d);
+      }
+      .brand b:first-child { font-size: clamp(19px, 3.2vh, 32px); }
+      .brand em {
+        display: block;
+        margin-top: 0.3vh;
+        font-style: normal;
+        font-size: clamp(9px, 1.35vh, 13px);
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        color: var(--p-blue);
+      }
+      .brand .meta {
+        margin-top: 1.3vh;
+        font-family: var(--mono);
+        font-size: clamp(8px, 1.05vh, 11px);
+        letter-spacing: 0.2em;
+        color: rgba(var(--p-blue-rgb), 0.5);
+        white-space: nowrap;
+      }
+      .brand .slats { display: flex; gap: 5px; margin-top: 1vh; }
+      .brand .slats i {
+        width: 14px;
+        height: 2px;
+        background: var(--p-blue);
+        opacity: 0.26;
+        transform-origin: left center;
+        animation: slat 1600ms ease-in-out infinite alternate;
+      }
+      .brand .slats i:nth-child(2) { animation-delay: 260ms; }
+      .brand .slats i:nth-child(3) { animation-delay: 520ms; }
+      @keyframes slat {
+        0% { opacity: 0.22; transform: scaleX(0.85); }
+        100% { opacity: 0.62; transform: scaleX(1); }
+      }
+
+      /* ── 主视觉：徽记 描边勾出 → 落墨 → 虚线环慢转 ─────────────────────── */
+      main {
+        position: fixed;
+        inset: 0;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+        text-align: center;
+      }
+      html[data-platform='windows'] main { padding-top: 70px; }
+
+      .markFrame { position: relative; display: grid; place-items: center; }
+      .mark {
+        width: clamp(190px, 33vh, 360px);
+        height: auto;
+        overflow: visible;
+        color: var(--p-blue);
+        /* 不用 filter: drop-shadow —— 落墨动画每帧改 fill-opacity，
+           滤镜会被逐帧重算。光晕交给下面的 .glow 单独一层。 */
+        transform: translateZ(0);
+      }
+      /* 落墨光晕：独立合成层，只动 opacity / transform */
+      .glow {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 200%;
+        height: 200%;
+        transform: translate(-50%, -50%) scale(0.94);
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(var(--p-blue-rgb), 0.17) 0%,
+          rgba(var(--p-blue-rgb), 0.06) 42%,
+          rgba(var(--p-blue-rgb), 0) 70%);
+        opacity: 0;
+        transition:
+          opacity 1200ms ease 860ms,
+          transform 2200ms cubic-bezier(0.3, 0.7, 0.2, 1) 860ms;
+        pointer-events: none;
+      }
+      .inked .glow { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      /* 实心层：只负责落墨，不参与勾线（否则会出现双描边） */
+      .mark #solid {
+        fill: currentColor;
+        fill-opacity: 0;
+        stroke: none;
+        transition: fill-opacity 940ms cubic-bezier(0.33, 0, 0.24, 1);
+      }
+      .inked .mark #solid { fill-opacity: 1; }
+      /* 勾线层：dasharray 走完全长 */
+      .mark .dash {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.1;
+        stroke-linecap: round;
+        stroke-dasharray: var(--len, 1200);
+        stroke-dashoffset: var(--len, 1200);
+        transition: stroke-dashoffset 1180ms cubic-bezier(0.55, 0.06, 0.24, 1);
+      }
+      .drawn .mark .dash { stroke-dashoffset: 0; }
+      .inked .mark .dash {
+        stroke-opacity: 0;
+        transition: stroke-opacity 700ms ease 380ms;
+      }
+
+      .halo {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 156%;
+        height: 156%;
+        transform: translate(-50%, -50%) rotate(0deg);
+        border: 1px dashed rgba(var(--p-blue-rgb), 0.18);
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 1100ms ease 860ms;
+      }
+      .inked .halo { opacity: 1; animation: halo 38000ms linear infinite; }
+      @keyframes halo {
+        to { transform: translate(-50%, -50%) rotate(360deg); }
+      }
+
+      /* 字标：逐字母升起 */
+      .word {
+        margin-top: clamp(18px, 3.2vh, 34px);
+        font-size: clamp(32px, 5.4vh, 58px);
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-indent: 0.1em;
+        color: var(--p-blue);
+        display: flex;
+        justify-content: center;
+      }
+      .word span {
+        display: inline-block;
+        opacity: 0;
+        transform: translateY(0.42em) scale(0.96);
+        transition:
+          opacity 660ms ease,
+          transform 820ms cubic-bezier(0.18, 0.9, 0.24, 1.02);
+        will-change: transform, opacity;
+      }
+      .worded .word span { opacity: 1; transform: none; }
+
+      .title {
+        margin: clamp(18px, 3vh, 30px) 0 0;
+        font-size: clamp(13px, 1.9vh, 18px);
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        color: var(--p-blue);
+        opacity: 0;
+        transform: translateY(0.5em);
+        transition:
+          opacity 700ms ease, transform 800ms cubic-bezier(0.16, 0.84, 0.24, 1);
+      }
+      .status {
+        margin: 10px 0 0;
+        font-size: clamp(10px, 1.4vh, 13px);
+        letter-spacing: 0.18em;
+        color: var(--p-mist);
+        opacity: 0;
+        transform: translateY(0.5em);
+        transition:
+          opacity 700ms ease 80ms,
+          transform 800ms cubic-bezier(0.16, 0.84, 0.24, 1) 80ms;
+      }
+      .staged .title,
+      .staged .status { opacity: 1; transform: none; }
+
+      /* ── 底部：滚动播报 + 进度线 + 状态条 ──────────────────────────────── */
+      .ticker {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: calc(7.2vh + 1.4vh);
+        z-index: 3;
+        height: 2.2vh;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        font-family: var(--mono);
+        font-size: clamp(8px, 1.02vh, 11px);
+        letter-spacing: 0.2em;
+        color: rgba(var(--p-blue-rgb), 0.32);
+        white-space: nowrap;
+        opacity: 0;
+        -webkit-mask-image: linear-gradient(
+          to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
+        mask-image: linear-gradient(
+          to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
+        transition: opacity 900ms ease 900ms;
+      }
+      .staged .ticker { opacity: 1; }
+      .ticker > div {
+        display: flex;
+        gap: 3vw;
+        width: max-content;
+        animation: ticker 46000ms linear infinite;
+      }
+      .ticker span { padding-right: 3vw; }
+      @keyframes ticker {
+        from { transform: translate3d(0, 0, 0); }
+        to { transform: translate3d(-50%, 0, 0); }
+      }
+
+      /* ── 同款环境件：左侧波形 / 右侧节点矩阵 / 徽记背后的雷达弧 ───────────
+       * 插件页面里这些是 .dsu-t-* 类；这里换成单文件内联版，位置与透明度同源。 */
+      .sigPanel {
+        position: fixed;
+        left: 3.4vw;
+        bottom: 16vh;
+        z-index: 3;
+        width: clamp(150px, 15vw, 230px);
+        opacity: 0;
+        transition: opacity 900ms ease 900ms;
+      }
+      .staged .sigPanel { opacity: 1; }
+      .sigPanel b,
+      .heat b {
+        display: block;
+        font-family: var(--mono);
+        font-size: 0.55vw;
+        font-weight: 500;
+        letter-spacing: 0.24em;
+        color: rgba(var(--p-blue-rgb), 0.42);
+      }
+      .wave {
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+        height: clamp(26px, 4.4vh, 46px);
+        margin-top: 1vh;
+      }
+      .wave i {
+        flex: 1;
+        height: 100%;
+        background: linear-gradient(180deg, rgba(var(--p-blue-rgb), 0.55), rgba(var(--p-blue-rgb), 0.16));
+        transform: scaleY(0.18);
+        transform-origin: 50% 100%;
+        animation: wave 2600ms cubic-bezier(0.4, 0, 0.5, 1) infinite alternate;
+      }
+      @keyframes wave {
+        0% { transform: scaleY(0.14); }
+        100% { transform: scaleY(1); }
+      }
+      .sigPanel em {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.9vh;
+        font-family: var(--mono);
+        font-style: normal;
+        font-size: 0.54vw;
+        letter-spacing: 0.16em;
+        color: rgba(var(--p-blue-rgb), 0.38);
+      }
+      .heat {
+        position: fixed;
+        /* 让开右侧标尺（2.4vw + 0.62vw）：贴着 3.4vw 会和刻度线压在一起 */
+        right: 6.4vw;
+        bottom: 16vh;
+        z-index: 3;
+        width: clamp(150px, 15vw, 230px);
+        text-align: right;
+        opacity: 0;
+        transition: opacity 900ms ease 1000ms;
+      }
+      .staged .heat { opacity: 1; }
+      .heat i {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 3px;
+        margin-top: 1vh;
+        opacity: 0.62;
+      }
+      .heat i span {
+        aspect-ratio: 1;
+        background: rgba(var(--p-blue-rgb), 0.12);
+        animation: cell 3400ms ease-in-out infinite;
+      }
+      @keyframes cell {
+        0%, 100% { opacity: 0.24; }
+        46% { opacity: 1; }
+      }
+      /* ── 右侧引导序列：与插件里那八行清单同一种「逐行点亮」语言 ───────────
+       * 居中徽记右侧原本是一整片空白，这里放启动阶段表，既填空间也交代进度。 */
+      .seq {
+        position: fixed;
+        right: 6.2vw;
+        top: 29vh;
+        z-index: 3;
+        width: clamp(180px, 16vw, 250px);
+        opacity: 0;
+        transition: opacity 900ms ease 1100ms;
+      }
+      .staged .seq { opacity: 1; }
+      .seq > b {
+        display: flex;
+        align-items: center;
+        gap: 0.7vw;
+        font-family: var(--mono);
+        font-size: clamp(8px, 1.02vh, 11px);
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        color: rgba(var(--p-blue-rgb), 0.5);
+      }
+      .seq > b::before,
+      .seq > b::after { content: ''; height: 1px; background: rgba(var(--p-blue-rgb), 0.2); }
+      .seq > b::before { flex: 0 0 1.1vw; }
+      .seq > b::after { flex: 1; }
+      .seq ul { margin: clamp(10px, 1.8vh, 20px) 0 0; padding: 0; list-style: none; }
+      .seq li {
+        display: flex;
+        align-items: center;
+        gap: 0.62vw;
+        padding: 0.5vh 0;
+        font-family: var(--mono);
+        font-size: clamp(9px, 1.15vh, 13px);
+        letter-spacing: 0.06em;
+        color: rgba(var(--p-blue-rgb), 0.34);
+        transition: color 620ms ease;
+      }
+      .seq li i {
+        flex: 0 0 auto;
+        width: 8px;
+        height: 8px;
+        border: 1px solid rgba(var(--p-blue-rgb), 0.4);
+        border-radius: 50%;
+        transition: background-color 620ms ease, box-shadow 620ms ease;
+      }
+      .seq li em {
+        margin-left: auto;
+        font-style: normal;
+        font-size: 0.52vw;
+        letter-spacing: 0.16em;
+        color: rgba(var(--p-blue-rgb), 0.24);
+        transition: color 620ms ease;
+      }
+      .seq li.done { color: var(--p-blue); }
+      .seq li.done i {
+        background: var(--p-blue);
+        box-shadow: 0 0 0 3px rgba(var(--p-blue-rgb), 0.1);
+      }
+      .seq li.done em { color: rgba(var(--p-blue-rgb), 0.5); }
+
+      /* 底部角标：与插件 .dsu-t-tag 同一位置、同一字号 */
+      .tag {
+        position: fixed;
+        z-index: 3;
+        font-family: var(--mono);
+        font-size: clamp(7px, 0.95vh, 10px);
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: rgba(var(--p-blue-rgb), 0.4);
+        opacity: 0;
+        transition: opacity 700ms ease 1100ms;
+        white-space: nowrap;
+      }
+      .staged .tag { opacity: 1; }
+      .tag.bl { left: 3.4vw; bottom: calc(7.2vh + 1.4vh + 2.2vh + 1.6vh); }
+      .tag.br { right: 3.4vw; bottom: calc(7.2vh + 1.4vh + 2.2vh + 1.6vh); }
+
+      .prog {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 7.2vh;
+        z-index: 3;
+        height: 2px;
+        background: rgba(var(--p-blue-rgb), 0.1);
+        contain: layout paint style;
+      }
+      .prog i {
+        position: relative;
+        display: block;
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, var(--p-blue-l), var(--p-blue));
+        box-shadow: 0 0 10px rgba(var(--p-blue-rgb), 0.28);
+      }
+      /* 流光：让进度线一直在走，不要停成一条静止的横线 */
+      .prog i::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(255, 255, 255, 0.66) 46%,
+          transparent 92%);
+        background-size: 42% 100%;
+        background-repeat: no-repeat;
+        animation: run 1900ms linear infinite;
+      }
+      @keyframes run {
+        from { background-position: -50% 0; }
+        to { background-position: 150% 0; }
+      }
+
+      .bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 3;
+        height: 7.2vh;
+        display: flex;
+        align-items: center;
+        gap: 2vw;
+        padding: 0 2.6vw;
+        font-family: var(--mono);
+        font-size: clamp(9px, 1.15vh, 13px);
+        letter-spacing: 0.02em;
+        color: var(--p-mist);
+        background: rgba(var(--p-white-rgb), 0.55);
+        border-top: 1px solid rgba(var(--p-blue-rgb), 0.1);
+        opacity: 0;
+        contain: layout paint style;
+        transition: opacity 640ms ease;
+      }
+      .staged .bar { opacity: 1; }
+      .bar .count { color: rgba(var(--p-blue-rgb), 0.72); letter-spacing: 0.18em; }
+      .bar .ms {
+        color: var(--p-blue);
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        min-width: 4.2em;
+      }
+      .bar .uid { color: rgba(var(--p-mist-rgb), 0.85); }
+      .bar .state {
+        margin-left: auto;
+        display: flex;
+        align-items: baseline;
+        gap: 0.9vw;
+      }
+      .bar .state b {
+        font-family: inherit;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        color: var(--p-blue-d);
+      }
+      .bar .state i {
+        font-style: normal;
+        letter-spacing: 0.26em;
+        text-transform: uppercase;
+        color: rgba(var(--p-mist-rgb), 0.8);
+      }
+      /* 状态文案交叉淡入（与插件同一手法：不硬替换文字） */
+      .swap { position: relative; display: inline-block; }
+      .swap .ghost {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0.5;
+        animation: ghostOut 420ms ease forwards;
+      }
+      @keyframes ghostOut {
+        from { opacity: 0.5; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(-0.3em); }
+      }
+      .swap .live {
+        display: inline-block;
+        animation: liveIn 480ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
+      }
+      @keyframes liveIn {
+        from { opacity: 0.15; transform: translateY(0.3em); }
+        to { opacity: 1; transform: none; }
+      }
+
+      /* 窄窗与矮窗：右侧状态格会顶到阶段表/标题，
+         它是"氛围件"、正文是"信息件"，窄下来先牺牲氛围件。 */
+      @media (max-width: 1100px), (max-height: 620px) {
+        .heat { display: none; }
+        .ruler { right: 2.2vw; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .beam, .halo, .ticker > div, .prog i::before,
+        .brand .slats i, .wave i, .heat i span { animation: none !important; }
+        .mark #solid, .mark .dash, .word span, .title, .status,
+        .bar, .ticker, .brand, .sigPanel, .heat { transition-duration: 1ms !important; transition-delay: 0ms !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="facet" aria-hidden="true"></div>
+    <div class="grid" aria-hidden="true"></div>
+    <div class="beam" aria-hidden="true"></div>
+    <div class="corner tl" aria-hidden="true"></div>
+    <div class="corner tr" aria-hidden="true"></div>
+    <div class="corner bl" aria-hidden="true"></div>
+    <div class="corner br" aria-hidden="true"></div>
+    <div class="ruler" aria-hidden="true"></div>
+
+    <div class="brand" aria-hidden="true">
+      <b>HAAVK</b>
+      <em>INFINITE INFORMATION</em>
+      <b>HAAVK GROUP</b>
+      <div class="meta" id="meta">REV 0.1.0 · BOOT PROFILE</div>
+      <div class="slats"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+
+    <main>
+      <div class="markFrame" aria-hidden="true">
+        <i class="glow"></i>
+        <i class="halo"></i>
+        <svg class="mark" viewBox="0 0 244 268">
+          <path
+            id="solid"
+            d="M99 0 L144 46 L144 150 L75 220 L0 145 L75 69 L75 207 L99 183 Z M168 69 L243 145 L168 220 L168 158 L144 182 L144 243 L121 267 L99 243 L99 214 L168 145 Z"
+            fill-rule="evenodd"
+          />
+          <path
+            class="dash"
+            d="M99 0 L144 46 L144 150 L75 220 L0 145 L75 69 L75 207 L99 183 Z M168 69 L243 145 L168 220 L168 158 L144 182 L144 243 L121 267 L99 243 L99 214 L168 145 Z"
+            fill-rule="evenodd"
+          />
+        </svg>
+      </div>
+
+      <div class="word" aria-hidden="true">
+        <span>H</span><span>A</span><span>A</span><span>V</span><span>K</span>
+      </div>
+
+      <h1 class="title" id="title">Starting DSH Desktop</h1>
+      <p class="status" id="status">First launch may take a moment.</p>
+    </main>
+
+    <div class="sigPanel" aria-hidden="true">
+      <b>LINK SIGNAL</b>
+      <div class="wave" id="wave"></div>
+      <em><span>RX 2.4Gb/s</span><span>LAT 12ms</span></em>
+    </div>
+
+    <div class="heat" aria-hidden="true">
+      <b>NODE MATRIX</b>
+      <i id="heatCells"></i>
+    </div>
+
+    <div class="seq" aria-hidden="true">
+      <b>BOOT SEQUENCE</b>
+      <ul id="seqList"></ul>
+    </div>
+
+    <div class="tag bl" aria-hidden="true">SKYNET NODE 04 · SECURE CHANNEL</div>
+    <div class="tag br" aria-hidden="true">ERAIS LOAD 61% · LINK STABLE</div>
+
+    <div class="ticker" aria-hidden="true"><div id="tickerRow"></div></div>
+    <div class="prog" aria-hidden="true"><i id="prog"></i></div>
+
+    <div class="bar" aria-hidden="true">
+      <span class="count" id="count">[ 01 / 03 ] BOOT</span>
+      <span class="ms" id="ms">38ms</span>
+      <span class="uid">CN UID:38228093479085077899.202609240017</span>
+      <span class="state">
+        <b class="swap" id="stateZh">建立安全通道</b>
+        <i class="swap" id="stateEn">SECURE HANDSHAKE</i>
+      </span>
+    </div>
+
+    <script>
+      ;(function () {
+        var root = document.documentElement
+        var zh = navigator.language.toLowerCase().startsWith('zh')
+
+        var TICKER = [
+          'HAAVK GLOBAL INTERLINK TERMINAL',
+          'NODE 04 / SHENZHEN RELAY',
+          'ERAIS RESOURCE RATIO NOMINAL',
+          'MANDELBRICK CACHE WARM',
+          'SKYNET TOPOLOGY SYNCED',
+          'DARKSTAR PROJECT · CLASSIFIED',
+          'OPERATOR CLEARANCE LEVEL 4',
+          'INFINITE INFORMATION'
+        ]
+
+        /* 状态条的三拍：与插件「建立安全通道 → 校验身份 → 装载链路」同节奏 */
+        var BEATS = zh
+          ? [
+              ['建立安全通道', 'SECURE HANDSHAKE', 'BOOT'],
+              ['校验操作员身份', 'VERIFYING OPERATOR', 'VERIFY'],
+              ['装载脑机链路', 'RELINK MOUNTED', 'LOAD']
+            ]
+          : [
+              ['ESTABLISHING CHANNEL', 'SECURE HANDSHAKE', 'BOOT'],
+              ['VERIFYING OPERATOR', 'CLEARANCE 4', 'VERIFY'],
+              ['MOUNTING LINK', 'RELINK MOUNTED', 'LOAD']
+            ]
+
+        /* 读数行右侧跟一个实时时钟：长启动时画面不会「定住」 */
+        var metaEl = document.getElementById('meta')
+        function paintClock() {
+          var d = new Date()
+          var p = function (n) { return (n < 10 ? '0' : '') + n }
+          metaEl.textContent =
+            'REV 0.1.0 · BOOT PROFILE  ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds())
+        }
+        paintClock()
+        setInterval(paintClock, 1000)
+
+        document.getElementById('title').textContent = zh
+          ? '正在启动 DSH Desktop'
+          : 'Starting DSH Desktop'
+        document.getElementById('status').textContent = zh
+          ? '哈夫克全域互联终端 · 首次启动可能需要一点时间。'
+          : 'HAAVK Global Interlink Terminal · first launch may take a moment.'
+
+        /* 播报条：两份拼起来才能无缝循环 */
+        var row = document.getElementById('tickerRow')
+        for (var r = 0; r < 2; r++) {
+          for (var t = 0; t < TICKER.length; t++) {
+            var sp = document.createElement('span')
+            sp.textContent = TICKER[t]
+            row.appendChild(sp)
+          }
+        }
+
+        /* 左侧波形：19 根，每根自己的周期与相位，避免整排同频「呼吸」 */
+        var wave = document.getElementById('wave')
+        for (var b = 0; b < 19; b++) {
+          var bar = document.createElement('i')
+          bar.style.animationDuration = 1500 + (b % 5) * 420 + 'ms'
+          bar.style.animationDelay = (b * 70) % 900 + 'ms'
+          wave.appendChild(bar)
+        }
+
+        /* 右侧节点矩阵：12 × 4 = 48 格，逐格错相位点亮 */
+        var cells = document.getElementById('heatCells')
+        for (var c = 0; c < 48; c++) {
+          var cell = document.createElement('span')
+          cell.style.animationDelay = (c * 137) % 2600 + 'ms'
+          cells.appendChild(cell)
+        }
+
+        /* 右侧启动阶段表：逐行点亮，和底部三拍同一个时间轴 */
+        var SEQ = zh
+          ? ['装载内核模块', '校验资源完整性', '挂载脑机链路', '渲染主界面']
+          : ['LOADING KERNEL', 'VERIFYING RESOURCES', 'MOUNTING RELINK', 'RENDERING SHELL']
+        var seqList = document.getElementById('seqList')
+        var seqItems = []
+        for (var q = 0; q < SEQ.length; q++) {
+          var li = document.createElement('li')
+          var dot = document.createElement('i')
+          var tx = document.createElement('span')
+          tx.textContent = SEQ[q]
+          var metaTxt = document.createElement('em')
+          metaTxt.textContent = '0' + (q + 1)
+          li.appendChild(dot)
+          li.appendChild(tx)
+          li.appendChild(metaTxt)
+          seqList.appendChild(li)
+          seqItems.push(li)
+        }
+
+        /* 勾线长度只量一次，不在动画里量 */
+        var dash = document.querySelector('.mark .dash')
+        try {
+          var len = Math.ceil(dash.getTotalLength()) || 1200
+          dash.style.setProperty('--len', len)
+        } catch (e) {
+          dash.style.setProperty('--len', 1200)
+        }
+
+        var letters = document.querySelectorAll('.word span')
+        for (var i = 0; i < letters.length; i++) {
+          letters[i].style.transitionDelay = 240 + i * 90 + 'ms'
+        }
+
+        /* 一拍：勾线 → 落墨 + 字标 → 文案 —— 错开，不要同帧齐亮 */
+        requestAnimationFrame(function () { root.classList.add('drawn') })
+        setTimeout(function () { root.classList.add('inked') }, 1180)
+        setTimeout(function () { root.classList.add('branded') }, 480)
+        setTimeout(function () { root.classList.add('worded') }, 1240)
+        setTimeout(function () { root.classList.add('staged') }, 1560)
+
+        /* 进度与节拍都按「时间」推进。
+         * 早期版本按进度百分比推节拍，0.6 秒就把三拍走完了，观感是瞬间跳；
+         * 现在用时间表：进度分档上台阶，节拍每 2.2 秒一换，两边都不会停。 */
+        var prog = document.getElementById('prog')
+        var msEl = document.getElementById('ms')
+        var countEl = document.getElementById('count')
+        var shown = 0
+        var target = 0.34
+        var msShown = 38
+        var beatAt = 0
+        var t0 = performance.now()
+        var BEAT_MS = 2200
+        var TARGETS = [
+          [0, 0.34], [3200, 0.5], [6400, 0.64], [9600, 0.8], [14000, 0.9]
+        ]
+
+        function targetAt(elapsed) {
+          var t = TARGETS[0][1]
+          for (var i = 0; i < TARGETS.length; i++) {
+            if (elapsed >= TARGETS[i][0]) t = TARGETS[i][1]
+          }
+          return t
+        }
+
+        function paint() {
+          var elapsed = performance.now() - t0
+          target = targetAt(elapsed)
+
+          shown += (target - shown) * 0.045
+          if (target - shown < 0.0015) shown = target
+          prog.style.width = (shown * 100).toFixed(2) + '%'
+
+          var wanted = 38 + Math.round(shown * 19)
+          if (wanted !== msShown) {
+            msShown = wanted
+            msEl.textContent = msShown + 'ms'
+          }
+
+          var idx = Math.min(BEATS.length - 1, Math.floor(elapsed / BEAT_MS))
+          if (idx !== beatAt) setBeat(idx)
+
+          /* 阶段表同步点亮：走完一行再走下一行，最多亮到倒数第二行，
+             最后一行留给主进程真正切走画面的那一刻。 */
+          var lit = Math.min(SEQ.length - 1, Math.floor(shown * SEQ.length * 1.15))
+          for (var s2 = 0; s2 < seqItems.length; s2++) {
+            seqItems[s2].classList.toggle('done', s2 < lit)
+          }
+
+          requestAnimationFrame(paint)
+        }
+
+        function setBeat(idx) {
+          beatAt = idx
+          swapText(document.getElementById('stateZh'), BEATS[idx][0])
+          swapText(document.getElementById('stateEn'), BEATS[idx][1])
+          countEl.textContent =
+            '[ 0' + (idx + 1) + ' / 0' + BEATS.length + ' ] ' + BEATS[idx][2]
+        }
+
+        /* 交叉淡入换字：旧词先浮走，新词再升起 */
+        function swapText(node, text) {
+          var old = node.textContent
+          if (old === text) return
+          node.textContent = ''
+          if (old) {
+            var ghost = document.createElement('span')
+            ghost.className = 'ghost'
+            ghost.textContent = old
+            node.appendChild(ghost)
+          }
+          var live = document.createElement('span')
+          live.className = 'live'
+          live.textContent = text
+          node.appendChild(live)
+          void node.offsetWidth
+          if (old) {
+            setTimeout(function () {
+              if (ghost.parentNode === node) node.removeChild(ghost)
+            }, 460)
+          }
+        }
+
+        requestAnimationFrame(paint)
+
+        /* 主进程真正切走画面之前，画面不能「定住」：
+           6.6 秒后补第四拍「等待渲染管线」，进度由时间表继续上台阶。 */
+        setTimeout(function () {
+          BEATS.push(zh
+            ? ['等待渲染管线', 'AWAITING RENDERER', 'READY']
+            : ['AWAITING RENDERER', 'STANDBY', 'READY'])
+        }, 6600)
+      })()
+    </script>
+  </body>
+</html>
