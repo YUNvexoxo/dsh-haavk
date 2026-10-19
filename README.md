@@ -2,6 +2,12 @@
 
 DeepSeek Harness 的启动界面与启动动画插件。
 
+> **⚠️ 二次开发声明**　本项目是**二次开发作品**，底座来自
+> [6shenhonghong9/dsh-startup-screen](https://github.com/6shenhonghong9/dsh-startup-screen)（MIT，**v1.1.1**，作者**沈宏宏**）。
+> 上游的许可证全文与原作者署名**完整保留**；本仓库以 MIT 发布，
+> 但**不覆盖**哈夫克 / HAAVK /《三角洲行动》相关素材与商标（权利归腾讯 / 天美）。
+> 完整声明见 [NOTICE](NOTICE)。
+
 **哈夫克全域互联终端**（《三角洲行动》哈夫克阵营开机画面）：浅蓝白斜切几何底 →
 左列菱形徽记与 HAAVK 字标 → 右列标题与八行逐行点亮的系统清单 → 五步访问授权推进 →
 分层退场 + 徽记落印 + WELCOME 交叉淡入 → 整片浅色场溶解回应用。
@@ -44,6 +50,7 @@ DeepSeek Harness 的启动界面与启动动画插件。
 | **[docs/GUIDE.md](docs/GUIDE.md)** | 使用说明：三种装法与 Windows 专节、30 项设置逐条解释、桌面端、出问题怎么查 |
 | [docs/ABOUT.md](docs/ABOUT.md) | 项目介绍：这个终端画面是怎么来的、设计取舍 |
 | [docs/UPSTREAM-DIFF.md](docs/UPSTREAM-DIFF.md) | 与原版（v1.1.1）的逐项差异清单 |
+| **[NOTICE](NOTICE)** | **二次开发声明：上游署名、许可范围、不覆盖的第三方素材** |
 | [DESKTOP.md](DESKTOP.md) | 桌面端原生启动壳：覆盖命令、签名、限制 |
 | [INSTALL.md](INSTALL.md) | 手工安装 / 离线安装 / 重复注册排查 |
 | [AUDIO-FIELDS.md](AUDIO-FIELDS.md) | 音频素材槽位协议（想换配音看这个） |
@@ -311,7 +318,7 @@ dsh-haavk/
 │   └── assets/              人声 / 界面音效 / 备选图像素材
 ├── desktop-shell/           桌面端原生层四张页（需手工覆盖，见 DESKTOP.md）
 ├── preview/index.html       离线预览页（带控制台，不装插件也能完整播一遍）
-├── test/                    六套冒烟测试（314 项断言，零依赖）
+├── test/                    七套冒烟测试（357 项断言，零依赖）
 ├── docs/                    使用文档 / 项目介绍 / 差异清单 / 截图
 ├── 安装.cmd  install.ps1                     Windows 安装（双击 / PowerShell）
 ├── 打开预览.cmd  open-preview.ps1  open-preview.sh     离线预览
@@ -351,7 +358,7 @@ start preview\index.html       # Windows
 身份名称、权限等级、主题与速度。
 
 ```bash
-npm test      # 六套冒烟测试，314 项断言，零依赖，node >= 20
+npm test      # 七套冒烟测试，357 项断言，零依赖，node >= 20
 ```
 
 | 套件 | 断言 | 覆盖 |
@@ -362,21 +369,35 @@ npm test      # 六套冒烟测试，314 项断言，零依赖，node >= 20
 | `smoke-desktop-boot.mjs` | 45 | 桌面端 `selfBoot` 兜底、自举失败回滚 |
 | `smoke-desktop-shell.mjs` | 48 | 原生壳无外链、色板逐 token 相等、徽记路径一致、时间轴错峰、减动效兜底 |
 | `smoke-windows.mjs` | 52 | `.cmd`/`.ps1` 行尾与 BOM、`.gitattributes`、两个安装入口一致、README 截图引用可解析 |
+| `smoke-notice.mjs` | 43 | 二次开发声明：NOTICE 要素齐全、LICENSE 双版权行、`package.json` 的 `upstream`、全仓没有错误的上游仓库名 |
 
 改完想装机验证：`npm pack` → `dsh plugin --profile web add ./dsh-haavk-1.8.0.tgz`。
 
 ---
 
-## 来源
+## 来源与二次开发声明
+
+本仓库是 [`6shenhonghong9/dsh-startup-screen`](https://github.com/6shenhonghong9/dsh-startup-screen)（MIT，v1.1.1，作者沈宏宏）的**二次开发作品**。
+
+| | |
+|---|---|
+| 上游 | [6shenhonghong9/dsh-startup-screen](https://github.com/6shenhonghong9/dsh-startup-screen) · v1.1.1 · MIT · 沈宏宏 |
+| 本仓库 | [YUNvexoxo/dsh-haavk](https://github.com/YUNvexoxo/dsh-haavk) · 二次开发 · MIT |
+| 上游署名 | `Copyright (c) 2026 沈宏宏`，保留在 [LICENSE](LICENSE) 第一行 |
+| 二次开发署名 | `Copyright (c) 2026 YUNvexoxo`，新增在 LICENSE 第二行 |
+| 再分发要求 | 必须同时保留两条版权声明与 MIT 全文 |
+| 不覆盖 | 哈夫克 / HAAVK /《三角洲行动》素材与商标、`lib/assets/` 音频 |
+
+改动对照见 [docs/UPSTREAM-DIFF.md](docs/UPSTREAM-DIFF.md)；完整声明与免责见 [NOTICE](NOTICE)。
 
 本项目分两段血统，说清楚免得误会：
 
-**底座来自 `6shenhonghong9/dsh-haavk`（MIT，v1.1.1）。**
+**底座来自 `6shenhonghong9/dsh-startup-screen`（MIT，v1.1.1）。**
 那是一位叫沈宏宏的作者做的 DeepSeek Harness 启动动画插件：黑幕 DeepSeek 鲸鱼标识 →
 过曝洗白 → 暖白「技术档案」底板 → 五步交互式访问授权 → 色散故障揭幕。
 Host/Client 两半的结构、路由注入、设置面板、四套冒烟测试、素材槽位协议
 （`AUDIO-FIELDS.md`）、桌面端 `selfBoot` 兜底，全部出自那一版。
-`package.json` 的 `repository` / `license` 与 `LICENSE` 文件里的原作者署名都予以保留。
+`LICENSE` 的 MIT 全文与原作者署名、`package.json` 的 `license: "MIT"` 都予以保留；`package.json` 另加 `upstream` 字段指回原项目，`repository` 指向本仓库。
 
 **视觉与序列是本仓库重做的。** 从 v1.2.1 起，主题改为《三角洲行动》哈夫克（HAAVK）阵营：
 黑幕换成 HAAVK 菱形徽记、暖白底板换成哈夫克蓝白、六幕授权文案换成哈夫克语境。
@@ -411,7 +432,7 @@ v1.5.0 起整体重写为「哈夫克全域互联终端」版式，v1.6.0 把过
 | 1.5.5 | 哈夫克终端 | 配色按参考图**网格取色反解**（`--p-plane-t/m/b` 上深下浅、`--p-facet-rgb` 极淡斜切）；修 settle 时水印残影、徽记虚线环居中 | 沿用 |
 | 1.6.0 | 哈夫克终端 | **治「切换感」+ 填空间**：描边落墨改 `fill-opacity` 过渡、换字不再强制同步布局、数据流不重启动画；徽记 38vh→46vh；新增信号波形 / 状态格 / 滚动播报 / 徽记光晕 / 终幕同心环；整层相机推近退场。实测 949 帧最差 16.8ms | 沿用 |
 | 1.7.0 | 哈夫克终端 | **原生启动壳同源化**：把桌面端那层注入不进去的 `splash.html` 重写为同一套哈夫克蓝白（同 `MARK_PATH`、同 `--p-*` 变量、描边→落墨→字标），并补上右侧 `BOOT SEQUENCE` 阶段表、左下 `LINK SIGNAL` 波形、右下 `NODE MATRIX` 状态格；`safe-mode` / `plugin-recovery` / `web-import` 三张原生页同步换色板；新增 `desktop-shell/` 与 `smoke-desktop-shell` 48 项校验 | 新增一层 |
-| 1.8.0 | 哈夫克终端 | **终幕换景**：删掉用户嫌丑的三层同心圆 / 准星 / 36 刻度表盘，改为「菱形坐标」—— 把徽记轮廓本身放大成背景框（`stroke` 描边 + `pathLength="1"` 归一化 dashoffset 自己描出来），框外四向短刻度，中心 30%×40% 用 radial mask 挖透明免得线穿字；`.dsu-t-finale` 从开场挪到 settle 同一拍，退场不再有「清空后重新布景」的空档。顺手修两处 1.7.x 就有的版式 bug：右侧标尺用错渐变方向被读成一根实心柱子、`NODE MATRIX` 与标尺压线；窄窗（≤1100px）藏状态格先保信息件 | 沿用 |
+| 1.8.0 | 哈夫克终端 | **终幕换景**：删掉用户嫌丑的三层同心圆 / 准星 / 36 刻度表盘，改为「菱形坐标」—— 把徽记轮廓本身放大成背景框（`stroke` 描边 + `pathLength="1"` 归一化 dashoffset 自己描出来），框外四向短刻度，中心 30%×40% 用 radial mask 挖透明免得线穿字；`.dsu-t-finale` 从开场挪到 settle 同一拍，退场不再有「清空后重新布景」的空档。顺手修两处 1.7.x 就有的版式 bug：右侧标尺用错渐变方向被读成一根实心柱子、`NODE MATRIX` 与标尺压线；窄窗（≤1100px）藏状态格先保信息件；补齐**二次开发声明**（新增 `NOTICE`、`LICENSE` 版权行扩为上游 + 二次开发两条、`package.json` 增 `upstream` 字段、新增 `smoke-notice` 43 项校验），并修正全局更名时被误改的上游仓库名 | 沿用 |
 
 每一版的 `.tgz` 都在仓库根目录留着，可以直接 `dsh plugin add` 任意一版回退对比。
 

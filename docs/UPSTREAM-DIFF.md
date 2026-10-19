@@ -1,6 +1,6 @@
 # 与原版的差异
 
-本仓库的底座是 [`6shenhonghong9/dsh-haavk`](https://github.com/6shenhonghong9/dsh-haavk)
+本仓库的底座是 [`6shenhonghong9/dsh-startup-screen`](https://github.com/6shenhonghong9/dsh-startup-screen)
 （MIT，**v1.1.1**，作者沈宏宏）。这一份文档把"原版是什么样、我们改了哪些、为什么改"
 说清楚 —— 上面的 README 里也有一段更简短的[来源](../README.md#来源)。
 
@@ -16,10 +16,13 @@
 |---|---|
 | `AUDIO-FIELDS.md` | 音频槽位协议 |
 | `cordis.patch.yml` | bundle 层声明 |
-| `LICENSE` | MIT，原作者署名保留 |
 | `安装.cmd` / `打开预览.cmd` / `open-preview.sh` | 三个入口脚本 |
 | `lib/assets/line-1..6.mp3`、`sfx-tick.mp3`、`sfx-ticks-run.mp3` | 八段音频，原封不动 |
 | `test/smoke-desktop-boot.mjs` | 桌面端自举测试（45 项） |
+
+> `LICENSE` 是唯一例外：MIT 正文一字未动，但**版权行由一条增为两条** ——
+> 上游 `Copyright (c) 2026 沈宏宏` 保留，另外增补二次开发署名
+> `Copyright (c) 2026 YUNvexoxo`（见 [NOTICE](../NOTICE)）。
 
 骨架层面保留的还有：Host/Client 两半结构、`ctx.webServer.register()` 路由注入方式、
 `dsh.profile.bundles` 层堆栈、设置面板的 `Field` / `TextInput` 控件骨架、
@@ -198,4 +201,4 @@ rAF 已经在逐帧写 `width`，CSS 再叠一层缓动会变成"黏着动"，�
 | 结尾时序 | `portalFinale()`（约 1852 行） |
 | 原生壳 | `desktop-shell/splash.html` |
 
-改完跑 `npm test`（六套 314 项断言），然后 `npm pack` + `dsh plugin --profile web add`。
+改完跑 `npm test`（七套 357 项断言），然后 `npm pack` + `dsh plugin --profile web add`。

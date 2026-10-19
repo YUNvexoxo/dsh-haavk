@@ -1,0 +1,49 @@
+# 二次开发声明 · Derivative Work Notice
+
+本仓库 **dsh-haavk** 是一份**二次开发作品**（derivative work），**不是原创项目**。
+上游是一个已经存在的开源插件，本仓库在它之上重做了主题、版式、动效与桌面端原生层。
+
+## 一、上游项目
+
+| 项 | 内容 |
+|---|---|
+| 上游仓库 | [6shenhonghong9/dsh-startup-screen](https://github.com/6shenhonghong9/dsh-startup-screen) |
+| 上游版本 | v1.1.1 |
+| 上游作者 | 沈宏宏（GitHub [@6shenhonghong9](https://github.com/6shenhonghong9)） |
+| 上游许可 | MIT License |
+| 上游贡献 | DeepSeek Harness 启动动画插件的 Host/Client 两半结构、`ctx.webServer.register()` 路由注入、设置面板控件骨架、五步交互式访问授权序列、四套冒烟测试、素材槽位协议（`AUDIO-FIELDS.md`）、桌面端 `selfBoot` 兜底 |
+
+上游的 MIT 许可证全文与**原作者版权署名完整保留**，未被移除、替换或弱化。
+
+## 二、本仓库做了什么
+
+自 v1.2.1 起在上游之上做二次开发，改动集中在**主题层与表现层**：
+
+- 主题改为《三角洲行动》哈夫克（HAAVK）阵营，整体版式重写为「哈夫克全域互联终端」；
+- 重做过渡、终幕与退场时序，新增过程动画与环境元素（信号波形 / 状态格 / 滚动播报等）；
+- 新增桌面端原生启动壳同源化层（`desktop-shell/`），并把四张原生页纳入同一套色板；
+- 补写文档（README / `docs/` / INSTALL / DESKTOP）与 Windows 安装支持，新增冒烟测试。
+
+逐条对照（改了哪个文件、为什么改）见 [`docs/UPSTREAM-DIFF.md`](docs/UPSTREAM-DIFF.md)。
+
+## 三、署名与许可
+
+- 上游署名：`Copyright (c) 2026 沈宏宏` —— 保留在 [`LICENSE`](LICENSE) 第一行。
+- 二次开发署名：`Copyright (c) 2026 YUNvexoxo` —— 新增在 `LICENSE` 第二行。
+- 本仓库整体仍以 **MIT** 发布。**再分发时必须同时保留上述两条版权声明与 MIT 许可全文**，
+  这是 MIT 的硬性要求（原文：*The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.*）。
+
+## 四、第三方素材与商标（**不在 MIT 覆盖范围内**）
+
+哈夫克 / HAAVK /《三角洲行动》的名称与标识，以及 `lib/assets/` 下的音频素材，
+权利归原权利人（腾讯 / 天美工作室群）所有。本项目是个人、非商业的粉丝向作品，
+与权利人之间不存在任何关联、授权、合作或背书关系。
+
+若权利人认为本项目侵犯了其合法权益，请联系作者，核实后将**立即移除**相关内容。
+
+## 五、免责
+
+二次开发与后续二次创作（修改、改编、翻译、再分发、商业使用）所产生的侵权、纠纷与
+全部法律责任，由行为人自行承担；本项目**未授权任何商业用途**。完整条款见
+[README 免责声明](README.md#免责声明)。

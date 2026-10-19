@@ -1,5 +1,8 @@
 # 安装说明
 
+> 本项目是 [`6shenhonghong9/dsh-startup-screen`](https://github.com/6shenhonghong9/dsh-startup-screen)
+> （MIT，作者沈宏宏）的二次开发作品，署名与许可见 [NOTICE](NOTICE)。
+
 ## 一、直接安装（推荐）
 
 ```bash

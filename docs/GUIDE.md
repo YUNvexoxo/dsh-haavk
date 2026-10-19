@@ -3,6 +3,10 @@
 面向使用者：怎么装、怎么调、出问题怎么查。想了解"为什么这样做"看
 [项目介绍](ABOUT.md)，想了解"和原版差在哪"看[与原版的差异](UPSTREAM-DIFF.md)。
 
+> 本仓库是 [`6shenhonghong9/dsh-startup-screen`](https://github.com/6shenhonghong9/dsh-startup-screen)
+> （MIT，v1.1.1，作者沈宏宏）的**二次开发作品**，上游署名完整保留。
+> 详见 [NOTICE](../NOTICE)。
+
 ---
 
 ## 一、装
@@ -320,7 +324,7 @@ dsh plugin --profile web remove dsh-haavk
 npm test
 ```
 
-六套冒烟测试，共 **314 项**断言：
+七套冒烟测试，共 **357 项**断言：
 
 | 套件 | 断言 | 覆盖 |
 |---|---|---|
@@ -330,6 +334,7 @@ npm test
 | `smoke-desktop-boot.mjs` | 45 | 桌面端 selfBoot 兜底、自举失败回滚 |
 | `smoke-desktop-shell.mjs` | 48 | 原生壳无外链、色板与 CSS 逐 token 相等、徽记路径一致、时间轴错峰、减动效兜底 |
 | `smoke-windows.mjs` | 52 | Windows 脚本行尾 / BOM、`.gitattributes`、安装入口、README 截图引用 |
+| `smoke-notice.mjs` | 43 | 二次开发声明齐全：NOTICE、LICENSE 双版权行、`upstream` 字段、上游仓库名未被更名误伤 |
 
 不需要任何依赖，`node >= 20` 直接跑。
 

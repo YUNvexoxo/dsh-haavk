@@ -1,7 +1,7 @@
 {
   "name": "dsh-haavk",
   "version": "1.8.0",
-  "description": "DeepSeek Harness 启动界面与启动动画（哈夫克 HAAVK 全域互联终端主题版）：复刻《三角洲行动》哈夫克阵营开机画面 —— 浅蓝白斜切几何底 + 四角刻度 + 右侧竖排标尺，左列哈夫克菱形徽记与 HAAVK 字标，右列「哈夫克全域互联终端」标题与八行逐行点亮的系统清单（正在遍历员工级别矩阵 / 正在启动员工效率监控系统 / 正在校准全域信号阵列 / 正在预热脑机接口 / 正在计算可接受损失 / 正在抑制不必要变量 / 每一秒，都在投资未来…… / 请稍候，进一步需要时间……），底部 55ms / CN UID 状态条与一条贯穿全宽的细进度线，开机五步复用同一套清单节奏推进；终幕分层退场 + 徽记落印 + WELCOME 交叉淡入 + 整片浅色场溶解，全程不缩放不失焦。配色只用哈夫克蓝白（主蓝 #2362af / 亮蓝 #5b96dd / 深蓝 #16324f）。身份名称等参数在 DSH 设置页可改。web profile 与 DeepSeek Harness Desktop 桌面端通用。",
+  "description": "【二次开发】DeepSeek Harness 启动界面与启动动画（哈夫克 HAAVK 全域互联终端主题版）：复刻《三角洲行动》哈夫克阵营开机画面 —— 浅蓝白斜切几何底 + 四角刻度 + 右侧竖排标尺，左列哈夫克菱形徽记与 HAAVK 字标，右列「哈夫克全域互联终端」标题与八行逐行点亮的系统清单（正在遍历员工级别矩阵 / 正在启动员工效率监控系统 / 正在校准全域信号阵列 / 正在预热脑机接口 / 正在计算可接受损失 / 正在抑制不必要变量 / 每一秒，都在投资未来…… / 请稍候，进一步需要时间……），底部 55ms / CN UID 状态条与一条贯穿全宽的细进度线，开机五步复用同一套清单节奏推进；终幕分层退场 + 徽记落印 + WELCOME 交叉淡入 + 整片浅色场溶解，全程不缩放不失焦。配色只用哈夫克蓝白（主蓝 #2362af / 亮蓝 #5b96dd / 深蓝 #16324f）。身份名称等参数在 DSH 设置页可改。web profile 与 DeepSeek Harness Desktop 桌面端通用。 底座为上游 6shenhonghong9/dsh-startup-screen (MIT, v1.1.1, 作者沈宏宏)，本仓库在其之上重做主题、版式、动效与桌面端原生层；上游版权署名完整保留，详见 NOTICE。",
   "keywords": [
     "dsh",
     "dsh-plugin",
@@ -33,15 +33,15 @@
     "desktop-shell",
     "LICENSE",
     "docs",
-    "ABOUT.md",
-    "UPSTREAM-DIFF.md",
     "install.ps1",
     "open-preview.ps1",
-    ".gitattributes"
+    ".gitattributes",
+    "NOTICE"
   ],
   "scripts": {
-    "test": "node test/smoke-host.mjs && node test/smoke-splash.mjs && node test/smoke-client.mjs && node test/smoke-desktop-boot.mjs && node test/smoke-desktop-shell.mjs && node test/smoke-windows.mjs"
+    "test": "node test/smoke-host.mjs && node test/smoke-splash.mjs && node test/smoke-client.mjs && node test/smoke-desktop-boot.mjs && node test/smoke-desktop-shell.mjs && node test/smoke-windows.mjs && node test/smoke-notice.mjs"
   },
+  "upstream": "https://github.com/6shenhonghong9/dsh-startup-screen",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -65,5 +65,8 @@
       "platform": "web"
     }
   },
-  "author": "沈宏宏"
+  "author": "沈宏宏（上游原版作者）",
+  "contributors": [
+    "YUNvexoxo（二次开发）"
+  ]
 }
