@@ -34,10 +34,13 @@
     "LICENSE",
     "docs",
     "ABOUT.md",
-    "UPSTREAM-DIFF.md"
+    "UPSTREAM-DIFF.md",
+    "install.ps1",
+    "open-preview.ps1",
+    ".gitattributes"
   ],
   "scripts": {
-    "test": "node test/smoke-host.mjs && node test/smoke-splash.mjs && node test/smoke-client.mjs && node test/smoke-desktop-boot.mjs && node test/smoke-desktop-shell.mjs"
+    "test": "node test/smoke-host.mjs && node test/smoke-splash.mjs && node test/smoke-client.mjs && node test/smoke-desktop-boot.mjs && node test/smoke-desktop-shell.mjs && node test/smoke-windows.mjs"
   },
   "license": "MIT",
   "repository": {

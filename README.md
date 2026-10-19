@@ -17,6 +17,40 @@ DeepSeek Harness 的启动界面与启动动画插件。
 
 ---
 
+## 截图
+
+**网页层**（插件注入，冷启动时播放）
+
+| 开场 · 徽记落墨 | 清单逐行点亮 · 进度推进 |
+|---|---|
+| ![开场](docs/img/web-01-entry.png) | ![进度](docs/img/web-02-progress.png) |
+| **全亮 · 终端全貌** | **终幕 · 欢迎屏** |
+| ![全貌](docs/img/web-03-full.png) | ![终幕](docs/img/web-04-finale.png) |
+| **深色主题** | **回退序列 · 黑幕揭幕** |
+| ![深色](docs/img/web-05-dark.png) | ![黑幕](docs/img/web-06-dmark.png) |
+
+**原生层**（桌面端 `Resources/splash.html`，插件注入不到，需覆盖文件）
+
+![原生启动壳](docs/img/native-light.png)
+
+截图取自本仓库的离线预览页与真实渲染，均为浅蓝 · 哈夫克终端主题。
+
+---
+
+## 文档导航
+
+| 文档 | 讲什么 |
+|---|---|
+| **[docs/GUIDE.md](docs/GUIDE.md)** | 使用说明：三种装法与 Windows 专节、30 项设置逐条解释、桌面端、出问题怎么查 |
+| [docs/ABOUT.md](docs/ABOUT.md) | 项目介绍：这个终端画面是怎么来的、设计取舍 |
+| [docs/UPSTREAM-DIFF.md](docs/UPSTREAM-DIFF.md) | 与原版（v1.1.1）的逐项差异清单 |
+| [DESKTOP.md](DESKTOP.md) | 桌面端原生启动壳：覆盖命令、签名、限制 |
+| [INSTALL.md](INSTALL.md) | 手工安装 / 离线安装 / 重复注册排查 |
+| [AUDIO-FIELDS.md](AUDIO-FIELDS.md) | 音频素材槽位协议（想换配音看这个） |
+| [preview/index.html](preview/index.html) | 离线预览页，不装插件也能看完整动画 |
+
+---
+
 ## 功能
 
 **开机序列**　冷启动时播一段完整的开机动画：终端画面淡入 → 八行系统清单按五步授权
@@ -81,7 +115,7 @@ WELCOME 落进去时不会掉进一片空场。徽记退到七成时 WELCOME 已
 
 **语音没播完不会推进**　每一步停留多久由实际音频时长决定。你点得快也不会把语音掐断。
 
-**三十三项设置**　身份名称、编号、权限等级、配色、速度、音色、语速、
+**三十项设置**　身份名称、编号、权限等级、配色、速度、音色、语速、
 开口留白、每处文案……都能在设置页实时改，改完立即生效。
 
 ---
@@ -130,23 +164,72 @@ dsh plugin --profile web add ./dsh-haavk-1.8.0.tgz
 **方式二 · 从 Release 下载**　到 [Releases](https://github.com/YUNvexoxo/dsh-haavk/releases)
 下载 `dsh-haavk-1.8.0.tgz`，然后 `dsh plugin --profile web add ./dsh-haavk-1.8.0.tgz`。
 
-Windows 上也可以解压后**双击「安装.cmd」**，脚本会自动完成同样的操作。
-
-**装完重启 dsh web**（关掉启动器窗口再重新双击）。重启后刷新页面就能看到启动动画，
-设置页里会多出一项「启动动画」。
-
 ### 环境要求
 
 | 项 | 要求 |
 |---|---|
-| 平台 | DSH **web** profile |
+| 宿主 | DeepSeek Harness，`web` profile（桌面端另见 [DESKTOP.md](DESKTOP.md)） |
 | Node | **>= 20** |
-| 依赖 | 无（不需要 `npm install`） |
+| 依赖 | **无**，不需要 `npm install` |
+| 操作系统 | macOS / Windows / Linux 均可（插件本身就是 HTML+CSS+JS） |
+| 浏览器 | 任意现代浏览器（Chrome / Edge / Safari / Firefox） |
+
+### Windows 安装
+
+仓库已经按 Windows 习惯处理好：脚本是 **CRLF 行尾**、`.ps1` 带 UTF-8 BOM（避免
+PowerShell 5.1 下中文乱码）、`.gitattributes` 保证克隆下来行尾不会被打乱。
+
+**① 双击 `安装.cmd`（最省事）**
+
+解压后双击即可。脚本会自动：找 `dsh` → 找包（`package.json` / `*.tgz`）→
+检测 `%USERPROFILE%\.dsh\profiles` 下的 web / desktop profile → 装进检测到的每一个。
+
+**② PowerShell**
+
+```powershell
+# 在解压后的插件目录里
+.\install.ps1                     # 自动检测并安装
+.\install.ps1 -Profile web        # 只装 web profile
+.\install.ps1 -Profile desktop    # 只装 desktop profile（先完全退出桌面端）
+.\install.ps1 -Pkg .\dsh-haavk-1.8.0.tgz   # 指定包
+```
+
+> 首次执行若提示脚本被禁止运行，用
+> `powershell -ExecutionPolicy Bypass -File .\install.ps1` 绕一次即可。
+
+**③ 手动**
+
+```powershell
+git clone https://github.com/YUNvexoxo/dsh-haavk.git
+cd dsh-haavk
+npm pack
+dsh plugin --profile web add .\dsh-haavk-1.8.0.tgz
+```
+
+**④ 不装插件也能看**：双击 `打开预览.cmd`（或 `.\open-preview.ps1`）直接打开离线预览页。
+
+Windows 上的几个注意点：
+
+- `dsh` 必须在 PATH 里（`npm i -g @deepseek-ai/dsh` 装完若提示找不到，
+  重开一个终端让 PATH 生效）；
+- 路径分隔符两种都行，PowerShell 里 `.\dsh-haavk-1.8.0.tgz` 和
+  `./dsh-haavk-1.8.0.tgz` 等价；
+- **桌面端（DeepSeek Harness Desktop）装插件前要完全退出**，profile 加锁期间装不进去；
+- 如果中文显示成方块，是终端代码页问题，`chcp 65001` 切到 UTF-8 即可（`安装.cmd` 已自带）。
+
+### 装完重启
+
+**关掉 dsh web 的启动器窗口，再重新双击。** 只刷新页面不够 —— 插件是 Host 侧注入，
+进程重启后才会挂上路由。重启后刷新页面就能看到启动动画，设置页里会多出一项「启动动画」。
 
 ### 卸载
 
 ```bash
-dsh plugin --profile web remove dsh-haavk
+dsh plugin --profile web remove dsh-haavk          # macOS / Linux
+```
+```powershell
+dsh plugin --profile web remove dsh-haavk          # Windows
+dsh plugin --profile desktop remove dsh-haavk      # Windows 桌面端
 ```
 
 ---
@@ -193,14 +276,17 @@ dsh plugin --profile web remove dsh-haavk
 |---|---|---|
 | 界面音效 | 开 | 文字出现、阶段推进、按钮确认的「哒」声 |
 | 音效音量 | 0.5 | 界面音效音量（不影响台词） |
-| 音效来源 | 内置素材 | `内置素材` 用录音 / `现场合成` 用代码合成 |
+
+> 「音效」这一个开关在设置页里出现了两次（「播放」分组里一次、「语音与音效」分组里一次），
+> 两处绑的是同一个值，改哪边都一样 —— 这是上游遗留的排版，功能上没有区别。
+> 配置文件里另有 `sfx`（音效来源：内置素材 / 现场合成）字段，设置页没暴露，可手改 `dsh-startup.json`。
 
 ### 视觉
 
 | 选项 | 默认 | 作用 |
 |---|---|---|
 | 强调色 | `#2362af` | 哈夫克主蓝（阶段条 / 进度线 / 高亮） |
-| 故障色 A / B | `#5b96dd` / `#16324f` | 回退序列色散故障用的亮蓝与深蓝 |
+| 故障色 B · 深蓝 | `#16324f` | 回退序列色散故障用的深蓝（故障色 A 固定 `#5b96dd`，不开放） |
 
 ### 文案
 
@@ -210,6 +296,74 @@ dsh plugin --profile web remove dsh-haavk
 | 黑幕三行 | `哈夫克` / `HAAVK` / `HAAVK GROUP` | 回退序列开场黑幕上的字 |
 | 终幕方框 | `HAAVK` | 终幕中央字标 |
 | 页脚 | `POWERED BY HAAVK` | 右下角页脚 |
+
+---
+
+## 目录结构
+
+```
+dsh-haavk/
+├── lib/                     插件本体
+│   ├── index.js             Host 半侧：路由注册、配置读写、注入片段
+│   ├── client.js            浏览器半侧：设置页「启动动画」+ 自举兜底
+│   ├── splash.js            启动动画运行时（零依赖，预览页与线上同一份）
+│   ├── splash.css           全部样式（portal 终端主题 + 上游旧序列）
+│   └── assets/              人声 / 界面音效 / 备选图像素材
+├── desktop-shell/           桌面端原生层四张页（需手工覆盖，见 DESKTOP.md）
+├── preview/index.html       离线预览页（带控制台，不装插件也能完整播一遍）
+├── test/                    六套冒烟测试（314 项断言，零依赖）
+├── docs/                    使用文档 / 项目介绍 / 差异清单 / 截图
+├── 安装.cmd  install.ps1                     Windows 安装（双击 / PowerShell）
+├── 打开预览.cmd  open-preview.ps1  open-preview.sh     离线预览
+├── cordis.patch.yml         插件挂载声明（`dsh plugin add` 时被应用）
+├── DESKTOP.md  INSTALL.md  AUDIO-FIELDS.md  补充文档
+└── package.json
+```
+
+---
+
+## 常见问题
+
+| 现象 | 原因 / 处理 |
+|---|---|
+| 刷新后没有动画 | 没装成或没重启。`curl -i http://127.0.0.1:43129/dsh-startup/splash.js` → **401 = 路由已注册（正常）**，**404 = 没装或没重启** |
+| 装完还是老样子 | 只刷新了页面。Host 侧注入需要**重启 dsh web 进程**才生效 |
+| 播了两次 / 启动就报错 | `~/.dsh/profiles/<profile>/cordis.patch.yml` 里还留着手工加的 `insert` 条目，删掉 |
+| 没有声音 | 浏览器要求先有一次用户点击才允许出声，冷启动静默是正常的；点一次页面后从下次刷新起能听到 |
+| 动画停在某一步 | 「需要人工确认」开着 → 点按钮或按 `Enter` / `Space`；或语音没播完（关掉「女声播报」） |
+| 看起来卡住 | 按 `Esc` 可直接跳过；9 秒兜底也会自动摘掉根节点 |
+| 桌面端启动壳还是白底鲸鱼 | 原生层要覆盖文件，插件管不到，见 [DESKTOP.md](DESKTOP.md) |
+| 中文显示成方块 | 终端代码页不是 UTF-8：`chcp 65001` |
+| 想彻底关掉 | 设置页关「启用启动动画」，或 `dsh plugin --profile web remove dsh-haavk` |
+
+---
+
+## 开发与自测
+
+改样式不用装插件，直接开预览页：
+
+```bash
+open preview/index.html        # macOS
+start preview\index.html       # Windows
+```
+
+预览页与线上共用同一份 `lib/splash.js` / `lib/splash.css`，右上角控制台能实时改
+身份名称、权限等级、主题与速度。
+
+```bash
+npm test      # 六套冒烟测试，314 项断言，零依赖，node >= 20
+```
+
+| 套件 | 断言 | 覆盖 |
+|---|---|---|
+| `smoke-host.mjs` | 59 | 路由注册、配置校验与夹取、注入片段、生命周期 |
+| `smoke-splash.mjs` | 70 | 最小 DOM 桩跑完整序列、选择器齐全、CSS 锚点 |
+| `smoke-client.mjs` | 40 | 设置面板渲染与字段读写 |
+| `smoke-desktop-boot.mjs` | 45 | 桌面端 `selfBoot` 兜底、自举失败回滚 |
+| `smoke-desktop-shell.mjs` | 48 | 原生壳无外链、色板逐 token 相等、徽记路径一致、时间轴错峰、减动效兜底 |
+| `smoke-windows.mjs` | 52 | `.cmd`/`.ps1` 行尾与 BOM、`.gitattributes`、两个安装入口一致、README 截图引用可解析 |
+
+改完想装机验证：`npm pack` → `dsh plugin --profile web add ./dsh-haavk-1.8.0.tgz`。
 
 ---
 

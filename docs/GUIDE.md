@@ -33,9 +33,49 @@ dsh plugin --profile web add ./dsh-haavk-1.8.0.tgz
 dsh plugin --profile web add ./dsh-haavk-1.8.0.tgz
 ```
 
-### 方式三：Windows 双击
+### 方式三：Windows
 
-解压后双击 **`安装.cmd`**，脚本会做和上面一样的事，并自动检查重复注册。
+仓库里的 Windows 脚本都按 Windows 习惯处理过：`.cmd` 是 **CRLF 行尾**、
+`.ps1` 带 **UTF-8 BOM**（否则 PowerShell 5.1 读中文会乱码）、
+`.gitattributes` 保证克隆下来行尾不被打乱。
+
+**① 双击 `安装.cmd`（最省事）**
+
+解压后双击。脚本会自动找 `dsh`、找包（`package.json` / `*.tgz`），再检测
+`%USERPROFILE%\.dsh\profiles` 下的 web / desktop profile，逐个安装，并提示重复注册。
+
+**② PowerShell**
+
+```powershell
+# 在解压后的插件目录里
+.\install.ps1                              # 自动检测并安装
+.\install.ps1 -Profile web                 # 只装 web profile
+.\install.ps1 -Profile desktop             # 只装 desktop profile（先完全退出桌面端）
+.\install.ps1 -Pkg .\dsh-haavk-1.8.0.tgz   # 指定包
+```
+
+若提示「禁止运行脚本」，用 `powershell -ExecutionPolicy Bypass -File .\install.ps1`
+绕一次；脚本同时兼容 Windows PowerShell 5.1 与 PowerShell 7。
+`DSH_HOME` 环境变量可覆盖默认的 `%USERPROFILE%\.dsh`。
+
+**③ 手动（PowerShell / cmd 都行）**
+
+```powershell
+git clone https://github.com/YUNvexoxo/dsh-haavk.git
+cd dsh-haavk
+npm pack
+dsh plugin --profile web add .\dsh-haavk-1.8.0.tgz
+```
+
+**④ 只想看看效果**：双击 `打开预览.cmd`（或 `.\open-preview.ps1`），
+不装插件、不依赖 DSH，浏览器直接打开离线预览页。
+
+Windows 注意点：
+
+- `dsh` 要在 PATH 里；`npm i -g @deepseek-ai/dsh` 之后如果仍提示找不到，重开一个终端；
+- 路径分隔符两种都行（`.\x.tgz` 与 `./x.tgz` 等价）；
+- **桌面端要完全退出**再装 desktop profile，进程在跑时 profile 会加锁；
+- 中文显示成方块 → `chcp 65001`（`安装.cmd` 已自带）。
 
 ### 装完必须重启
 
@@ -280,7 +320,7 @@ dsh plugin --profile web remove dsh-haavk
 npm test
 ```
 
-五套冒烟测试，共 **262 项**断言：
+六套冒烟测试，共 **314 项**断言：
 
 | 套件 | 断言 | 覆盖 |
 |---|---|---|
@@ -289,6 +329,7 @@ npm test
 | `smoke-client.mjs` | 40 | 设置面板渲染与字段读写 |
 | `smoke-desktop-boot.mjs` | 45 | 桌面端 selfBoot 兜底、自举失败回滚 |
 | `smoke-desktop-shell.mjs` | 48 | 原生壳无外链、色板与 CSS 逐 token 相等、徽记路径一致、时间轴错峰、减动效兜底 |
+| `smoke-windows.mjs` | 52 | Windows 脚本行尾 / BOM、`.gitattributes`、安装入口、README 截图引用 |
 
 不需要任何依赖，`node >= 20` 直接跑。
 

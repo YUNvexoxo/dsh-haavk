@@ -198,4 +198,4 @@ rAF 已经在逐帧写 `width`，CSS 再叠一层缓动会变成"黏着动"，�
 | 结尾时序 | `portalFinale()`（约 1852 行） |
 | 原生壳 | `desktop-shell/splash.html` |
 
-改完跑 `npm test`（五套 262 项断言），然后 `npm pack` + `dsh plugin --profile web add`。
+改完跑 `npm test`（六套 314 项断言），然后 `npm pack` + `dsh plugin --profile web add`。
