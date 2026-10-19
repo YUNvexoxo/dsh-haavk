@@ -3,7 +3,7 @@
 ## 一、直接安装（推荐）
 
 ```bash
-dsh plugin --profile web add ./dsh-haavk-1.7.0.tgz
+dsh plugin --profile web add ./dsh-haavk-1.8.0.tgz
 ```
 
 Windows 上双击 `安装.cmd` 也一样。

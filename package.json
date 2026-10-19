@@ -31,7 +31,10 @@
     "DESKTOP.md",
     "AUDIO-FIELDS.md",
     "desktop-shell",
-    "LICENSE"
+    "LICENSE",
+    "docs",
+    "ABOUT.md",
+    "UPSTREAM-DIFF.md"
   ],
   "scripts": {
     "test": "node test/smoke-host.mjs && node test/smoke-splash.mjs && node test/smoke-client.mjs && node test/smoke-desktop-boot.mjs && node test/smoke-desktop-shell.mjs"
